@@ -25,17 +25,13 @@ Add "francedata" to your INSTALLED_APPS setting like this::
         'francedata',
     ]
 
-2. Include the francedata URLconf in your project urls.py like this::
+2. Run ``python manage.py migrate`` to create the francedata models.
 
-    path('france/', include('francedata.urls')),
-
-3. Run ``python manage.py migrate`` to create the francedata models.
-
-4. Run the two initialization commands to get the communes, EPCIs, départements and régions structure
+3. Run the two initialization commands to get the communes, EPCIs, départements and régions structure
   - `python manage.py cog_import`
   - `python manage.py banatic_import`
 
-5. Visit http://127.0.0.1:8000/admin/ to see the data.
+4. Visit http://127.0.0.1:8000/admin/ to see the data.
   
 Commands
 ########
