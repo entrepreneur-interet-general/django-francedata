@@ -9,13 +9,11 @@ This app was created as a part of `Open Collectivités <https://github.com/entre
 Unaccent extension
 ##################
 
-If the PostgreSQL user specified in the Django settings is not a superuser, connect to the postgres user and create the Unaccent extension manually
+If the PostgreSQL user specified in the Django settings is not a superuser, connect to the postgres user and create the Unaccent extension manually::
 
-```
-psql
-\c <dbname>
- "CREATE EXTENSION  IF NOT EXISTS unaccent;"
-```
+    psql
+    \c <dbname>
+    "CREATE EXTENSION  IF NOT EXISTS unaccent;"
 
 Quickstart
 ##########
