@@ -3,6 +3,7 @@ from typing import Callable
 import requests
 from zipfile import ZipFile
 from io import BytesIO, TextIOWrapper
+from importlib import resources
 
 
 def parse_csv_from_distant_zip(
@@ -42,7 +43,7 @@ def parse_csv_from_stream(
 
 
 def add_sirens_and_categories(input_file, model_name, year_entry):
-    with open(input_file, "r") as input_csv:
+    with resources.open_text("francedata.resources", input_file) as input_csv:
         reader = csv.DictReader(input_csv)
         for row in reader:
             insee = row["Insee"]

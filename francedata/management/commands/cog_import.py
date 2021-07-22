@@ -59,7 +59,7 @@ class Command(BaseCommand):
             response = import_regions_from_cog(year)
 
             # Then the SIRENs from a local file
-            regions_list = path.join("francedata", "resources", "regions-siren.csv")
+            regions_list = "regions-siren.csv"
             add_sirens_and_categories(regions_list, Region, response["year_entry"])
 
         # Départements
@@ -68,7 +68,7 @@ class Command(BaseCommand):
             response = import_departements_from_cog(year)
 
             # Then the SIRENs from a local file
-            depts_list = path.join("francedata", "resources", "departements-siren.csv")
+            depts_list = "departements-siren.csv"
             add_sirens_and_categories(depts_list, Departement, response["year_entry"])
 
         # Communes
