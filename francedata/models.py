@@ -280,7 +280,7 @@ class RegionData(CollectivityDataModel):
         verbose_name_plural = "données région"
         constraints = [
             models.UniqueConstraint(
-                fields=["region", "year", "datacode"], name="unique region data"
+                fields=["region", "year", "datacode"], name="fd_unique_region_data"
             )
         ]
 
@@ -299,7 +299,7 @@ class DepartementData(CollectivityDataModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["departement", "year", "datacode"],
-                name="unique departement data",
+                name="fd_unique_departement_data",
             )
         ]
 
@@ -316,7 +316,7 @@ class EpciData(CollectivityDataModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["epci", "year", "datacode"],
-                name="unique epci data",
+                name="fd_unique_epci_data",
             )
         ]
 
@@ -335,7 +335,7 @@ class CommuneData(CollectivityDataModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["commune", "year", "datacode"],
-                name="unique commune data",
+                name="fd_unique_commune_data",
             )
         ]
 
