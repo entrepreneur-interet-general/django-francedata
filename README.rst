@@ -1,10 +1,10 @@
-===========
-France data
-=========== 
+=================
+Django-Francedata
+=================
 
 Provides a database structure, API and import scripts to manage French communes, intercommunalités, départements and régions, with their structure and data from Insee and the DGCL.
 
-This app was created as a part of `Open Collectivités <https://github.com/entrepreneur-interet-general/opencollectivites>`.
+This app was created as a part of `Open Collectivités <https://github.com/entrepreneur-interet-general/opencollectivites>`_.
 
 Unaccent extension
 ##################
