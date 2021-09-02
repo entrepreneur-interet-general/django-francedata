@@ -128,5 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# logs
+# Django stuff:
+*.log
+/static
 logs/
