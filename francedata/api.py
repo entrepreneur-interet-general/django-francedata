@@ -133,7 +133,13 @@ def search_subdivisions(request, query: str, category: str = None, year: int = N
                 {"value": r.siren, "text": r.name, "type": "region", "slug": r.slug}
             )
 
-        response.append({"groupName": f"Régions ({len(regions)})", "items": regions})
+        response.append(
+            {
+                "type": "region",
+                "groupName": f"Régions ({len(regions)})",
+                "items": regions,
+            }
+        )
 
     if len(departements_raw):
         departements = []
@@ -148,7 +154,11 @@ def search_subdivisions(request, query: str, category: str = None, year: int = N
             )
 
         response.append(
-            {"groupName": f"Départements ({len(departements)})", "items": departements}
+            {
+                "type": "departement",
+                "groupName": f"Départements ({len(departements)})",
+                "items": departements,
+            }
         )
 
     if len(epcis_raw):
@@ -159,7 +169,11 @@ def search_subdivisions(request, query: str, category: str = None, year: int = N
             )
 
         response.append(
-            {"groupName": f"Intercommunalités ({len(epcis)})", "items": epcis}
+            {
+                "type": "epci",
+                "groupName": f"Intercommunalités ({len(epcis)})",
+                "items": epcis,
+            }
         )
 
     if len(communes_raw):
@@ -176,7 +190,13 @@ def search_subdivisions(request, query: str, category: str = None, year: int = N
                 }
             )
 
-        response.append({"groupName": f"Communes ({len(communes)})", "items": communes})
+        response.append(
+            {
+                "type": "commune",
+                "groupName": f"Communes ({len(communes)})",
+                "items": communes,
+            }
+        )
 
     return response
 

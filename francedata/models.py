@@ -41,6 +41,10 @@ class DataYear(TimeStampModel):
     class Meta:
         verbose_name = "millésime"
 
+    @classmethod
+    def get_latest(cls):
+        return cls.objects.order_by("-year")[0]
+
 
 class DataSource(TimeStampModel):
     """
