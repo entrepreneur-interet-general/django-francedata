@@ -132,3 +132,6 @@ dmypy.json
 *.log
 /static
 logs/
+
+# editor stuff
+.vscode/
