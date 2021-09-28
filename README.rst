@@ -1,3 +1,6 @@
+.. image:: https://badge.fury.io/py/django-francedata.svg
+    :target: https://pypi.org/project/django-francedata/
+
 =================
 Django-Francedata
 =================
