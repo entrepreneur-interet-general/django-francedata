@@ -1,5 +1,5 @@
-.. image:: https://badge.fury.io/py/django-dsfr.svg
-    :target: https://pypi.org/project/django-dsfr/
+.. image:: https://badge.fury.io/py/django-francedata.svg
+    :target: https://pypi.org/project/django-francedata/
 
 =================
 Django-Francedata
