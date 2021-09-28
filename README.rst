@@ -1,3 +1,6 @@
+.. image:: https://badge.fury.io/py/django-dsfr.svg
+    :target: https://pypi.org/project/django-dsfr/
+
 =================
 Django-Francedata
 =================
