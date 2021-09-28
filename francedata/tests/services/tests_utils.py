@@ -12,7 +12,7 @@ from francedata.services.utils import (
 
 class FileExistsAtUrlTestCase(TestCase):
     def test_url_to_valid_file_returns_true(self) -> None:
-        valid_url = "https://open-collectivites.fr/mentions-legales"
+        valid_url = "https://open-collectivites.fr/mentions-legales/"
         result = file_exists_at_url(valid_url)
         self.assertTrue(result)
 
