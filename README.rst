@@ -1,6 +1,10 @@
 .. image:: https://badge.fury.io/py/django-francedata.svg
     :target: https://pypi.org/project/django-francedata/
 
+.. image:: https://github.com/entrepreneur-interet-general/django-francedata/actions/workflows/django.yml/badge.svg
+    :target: https://github.com/entrepreneur-interet-general/django-francedata/actions/workflows/django.yml
+
+
 =================
 Django-Francedata
 =================
