@@ -4,6 +4,9 @@
 .. image:: https://github.com/entrepreneur-interet-general/django-francedata/actions/workflows/django.yml/badge.svg
     :target: https://github.com/entrepreneur-interet-general/django-francedata/actions/workflows/django.yml
 
+.. image:: https://github.com/entrepreneur-interet-general/django-francedata/actions/workflows/codeql-analysis.yml/badge.svg
+    :target: https://github.com/entrepreneur-interet-general/django-francedata/actions/workflows/codeql-analysis.yml
+
 
 =================
 Django-Francedata
