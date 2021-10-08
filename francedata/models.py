@@ -252,6 +252,33 @@ class Commune(CollectivityModel):
     def create_slug(self):
         self.slug = slugify(f"{self.name}-{self.insee}")
 
+    @classmethod
+    def get_prefectures(cls) -> QuerySet:
+        """
+        Returns a queryset with all préfectures
+        """
+        return cls.objects.filter(
+            insee__in=DepartementData.objects.filter(datacode="seat_insee").values_list(
+                "value", flat=True
+            )
+        )
+
+    @classmethod
+    def get_main_cities_by_population(cls, population: int = 50000) -> QuerySet:
+        """
+        Returns a queryset with cities over a set population (default: 50 000)
+        """
+        return cls.objects.filter(population__gt=population)
+
+    @classmethod
+    def get_main_cities(cls) -> QuerySet:
+        """
+        Returns a queryset that combines préfectures and most populated cities
+        """
+        prefectures = cls.get_prefectures()
+        most_populated = cls.get_main_cities_by_population()
+        return prefectures | most_populated
+
 
 # France collectivities data models
 class CollectivityDataModel(TimeStampModel):
