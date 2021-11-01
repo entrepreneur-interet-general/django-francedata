@@ -199,6 +199,26 @@ class CommuneAdmin(TimeStampModelAdmin):
     region_link.short_description = "région"
 
 
+@admin.register(models.DataSource)
+class DataSourceAdmin(TimeStampModelAdmin):
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": [
+                    "title",
+                    "public_label",
+                    "url",
+                    "year",
+                ]
+            },
+        ),
+        ("Import", {"fields": ["is_imported", "imported_at"]}),
+        ("Métadonnées", {"fields": ["id", "created_at", "updated_at"]}),
+    ]
+    list_display = ("__str__", "is_imported")
+    list_filter = ("title", "year", "is_imported")
+
+
 admin.site.register(models.Metadata)
 admin.site.register(models.DataYear)
-admin.site.register(models.DataSource)

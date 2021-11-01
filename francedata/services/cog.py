@@ -68,6 +68,9 @@ def import_regions_from_cog(year: int = 0) -> dict:
 
     Metadata.objects.get_or_create(prop="cog_regions_year", value=year)
 
+    source_entry.mark_imported()
+    source_entry.save()
+
     return {"year_entry": year_entry}
 
 
@@ -155,6 +158,9 @@ def import_departements_from_cog(year):
         print(import_departement_from_cog(dept, year_entry, source_entry))
 
     Metadata.objects.get_or_create(prop="cog_depts_year", value=year)
+
+    source_entry.mark_imported()
+    source_entry.save()
 
     return {"year_entry": year_entry}
 
@@ -256,6 +262,9 @@ def import_communes_from_cog(year):
     md_entry, md_return_code = Metadata.objects.get_or_create(
         prop="cog_communes_year", value=year
     )
+
+    source_entry.mark_imported()
+    source_entry.save()
 
 
 def import_commune_from_cog(
