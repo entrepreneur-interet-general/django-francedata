@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Max
 from django.db.models.query import QuerySet
+from django.utils import timezone
 from django.utils.text import slugify
 
 from francedata.services.django_admin import TimeStampModel
@@ -52,13 +53,28 @@ class DataSource(TimeStampModel):
     """
 
     title = models.CharField("titre", max_length=255)
-    url = models.CharField("URL", max_length=255)
+    url = models.CharField("URL", max_length=255, null=True, blank=True)
     year = models.ForeignKey(
         "DataYear", on_delete=models.RESTRICT, verbose_name="millésime"
     )
+    public_label = models.CharField(
+        "libellé public", max_length=1000, null=True, blank=True
+    )
+    is_imported = models.BooleanField("import effectué", default=False)
+    imported_at = models.DateTimeField("date d’import", null=True, blank=True)
 
     def __str__(self):
         return f"{self.title} ({self.year})"
+
+    def get_public_label(self) -> str:
+        if self.public_label:
+            return self.public_label
+        else:
+            return self.__str__()
+
+    def mark_imported(self) -> None:
+        self.is_imported = True
+        self.imported_at = timezone.now()
 
     class Meta:
         verbose_name = "source"

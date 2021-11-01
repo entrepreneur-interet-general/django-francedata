@@ -63,6 +63,26 @@ class DataSourceTestCase(TestCase):
                 title="Test title", url="http://test-url.com", year=year
             )
 
+    def test_datasource_is_not_imported_by_default(self) -> None:
+        test_item = DataSource.objects.get(year__year=2020)
+        self.assertFalse(test_item.is_imported)
+        self.assertIsNone(test_item.imported_at)
+
+    def test_datasource_can_be_marked_as_imported(self) -> None:
+        test_item = DataSource.objects.get(year__year=2020)
+        test_item.mark_imported()
+        self.assertTrue(test_item.is_imported)
+        self.assertIsNotNone(test_item.imported_at)
+
+    def test_datasource_has_title_as_public_label_by_default(self) -> None:
+        test_item = DataSource.objects.get(year__year=2020)
+        self.assertEqual(test_item.get_public_label(), "Test title (2020)")
+
+    def test_datasource_public_label_can_be_set(self) -> None:
+        test_item = DataSource.objects.get(year__year=2020)
+        test_item.public_label = "Manually set public label"
+        self.assertEqual(test_item.get_public_label(), "Manually set public label")
+
 
 class RegionTestCase(TestCase):
     def setUp(self) -> None:
