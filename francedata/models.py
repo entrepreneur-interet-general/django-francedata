@@ -75,6 +75,7 @@ class DataSource(TimeStampModel):
     def mark_imported(self) -> None:
         self.is_imported = True
         self.imported_at = timezone.now()
+        self.save()
 
     class Meta:
         verbose_name = "source"
