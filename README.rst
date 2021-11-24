@@ -32,7 +32,9 @@ Quickstart
 
     INSTALLED_APPS = [
         ...
-        'francedata',
+        "django_json_widget",
+        "simple_history",
+        "francedata",
     ]
 
 2. Run ``python manage.py migrate`` to create the francedata models.

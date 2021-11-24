@@ -68,9 +68,6 @@ def import_regions_from_cog(year: int = 0) -> dict:
 
     Metadata.objects.get_or_create(prop="cog_regions_year", value=year)
 
-    source_entry.mark_imported()
-    source_entry.save()
-
     return {"year_entry": year_entry}
 
 
@@ -158,9 +155,6 @@ def import_departements_from_cog(year):
         print(import_departement_from_cog(dept, year_entry, source_entry))
 
     Metadata.objects.get_or_create(prop="cog_depts_year", value=year)
-
-    source_entry.mark_imported()
-    source_entry.save()
 
     return {"year_entry": year_entry}
 
@@ -263,9 +257,6 @@ def import_communes_from_cog(year):
         prop="cog_communes_year", value=year
     )
 
-    source_entry.mark_imported()
-    source_entry.save()
-
 
 def import_commune_from_cog(
     commune: dict, year_entry: DataYear, source_entry: DataSource
@@ -292,7 +283,7 @@ def import_commune_from_cog(
     # Import metadata
     metadata_keys = ["tncc", "nccenr"]
     for md_key in metadata_keys:
-        metadata_entry, _md_entry_return_code = CommuneData.objects.get_or_create(
+        metadata_entry, _md_created = CommuneData.objects.get_or_create(
             commune=entry,
             year=year_entry,
             datacode=md_key,
@@ -300,6 +291,6 @@ def import_commune_from_cog(
             value=commune[md_key],
             source=source_entry,
         )
-    metadata_entry.save()
+        metadata_entry.save()
 
     return return_message

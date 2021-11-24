@@ -1,7 +1,12 @@
+from francedata.services.django_admin import TimeStampModel
+from django.db import models
+
+from francedata.models.meta import DataYear
+
+from unidecode import unidecode
 from django.db import models
 from django.db.models import Max
 from django.db.models.query import QuerySet
-from django.utils import timezone
 from django.utils.text import slugify
 
 from francedata.services.django_admin import TimeStampModel
@@ -11,75 +16,6 @@ from francedata.services.validators import (
     validate_insee_commune,
     validate_siren,
 )
-
-
-# Meta models
-class Metadata(TimeStampModel):
-    """
-    The metadata, as property (prop)/value couples
-    """
-
-    prop = models.CharField(max_length=100)
-    value = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f"{self.prop}: {self.value}"
-
-    class Meta:
-        verbose_name = "métadonnée"
-
-
-class DataYear(TimeStampModel):
-    """
-    The years for which we have data stored
-    """
-
-    year = models.PositiveSmallIntegerField(unique=True)
-
-    def __str__(self):
-        return f"{self.year}"
-
-    class Meta:
-        verbose_name = "millésime"
-
-    @classmethod
-    def get_latest(cls):
-        return cls.objects.order_by("-year")[0]
-
-
-class DataSource(TimeStampModel):
-    """
-    The source file for the data stored
-    """
-
-    title = models.CharField("titre", max_length=255)
-    url = models.CharField("URL", max_length=255, null=True, blank=True)
-    year = models.ForeignKey(
-        "DataYear", on_delete=models.RESTRICT, verbose_name="millésime"
-    )
-    public_label = models.CharField(
-        "libellé public", max_length=1000, null=True, blank=True
-    )
-    is_imported = models.BooleanField("import effectué", default=False)
-    imported_at = models.DateTimeField("date d’import", null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.title} ({self.year})"
-
-    def get_public_label(self) -> str:
-        if self.public_label:
-            return self.public_label
-        else:
-            return self.__str__()
-
-    def mark_imported(self) -> None:
-        self.is_imported = True
-        self.imported_at = timezone.now()
-        self.save()
-
-    class Meta:
-        verbose_name = "source"
-        unique_together = (("title", "url", "year"),)
 
 
 # France administrative structure models
@@ -108,7 +44,7 @@ class CollectivityModel(TimeStampModel):
         return data
 
     def create_slug(self):
-        self.slug = slugify(self.name)
+        self.slug = slugify(unidecode(self.name))
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -235,7 +171,7 @@ class Epci(CollectivityModel):
         return self.name
 
     def create_slug(self):
-        self.slug = slugify(f"{self.name}-{self.siren}")
+        self.slug = slugify(f"{unidecode(self.name)}-{self.siren}")
 
 
 class Commune(CollectivityModel):
@@ -267,7 +203,7 @@ class Commune(CollectivityModel):
         return f"{self.name} ({self.departement})"
 
     def create_slug(self):
-        self.slug = slugify(f"{self.name}-{self.insee}")
+        self.slug = slugify(f"{unidecode(self.name)}-{self.insee}")
 
     @classmethod
     def get_prefectures(cls) -> QuerySet:
@@ -309,6 +245,7 @@ class CollectivityDataModel(TimeStampModel):
     )
     datacode = models.CharField("code", max_length=255)
     value = models.CharField("valeur", max_length=255, blank=True, null=True)
+    label = models.CharField("label", max_length=255, blank=True, null=True)
     datatype = models.CharField("type", max_length=255, blank=True, null=True)
     source = models.ForeignKey(
         "DataSource", on_delete=models.PROTECT, verbose_name="source"

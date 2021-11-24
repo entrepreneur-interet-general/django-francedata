@@ -1,9 +1,14 @@
-import csv
-from typing import Callable
+from typing import Callable, Union
 import requests
+import pandas
 from zipfile import ZipFile
-from io import BytesIO, TextIOWrapper
+from io import BytesIO, TextIOWrapper, StringIO
 from importlib import resources
+
+from django.db.models.fields.files import FieldFile
+
+# Caution, we import two different types of DictReader here
+from csv import DictReader
 
 
 def parse_csv_from_distant_zip(
@@ -24,7 +29,7 @@ def parse_csv_from_stream(
     column_names: dict,
     typecheck: dict = False,
 ):
-    reader = csv.DictReader(stream)
+    reader = DictReader(stream)
     entries = []
     if typecheck:
         tc_col = typecheck["column"]
@@ -44,7 +49,7 @@ def parse_csv_from_stream(
 
 def add_sirens_and_categories(input_file, model_name, year_entry):
     with resources.open_text("francedata.resources", input_file) as input_csv:
-        reader = csv.DictReader(input_csv)
+        reader = DictReader(input_csv)
         for row in reader:
             insee = row["Insee"]
             siren = row["Siren"]
@@ -72,3 +77,46 @@ def get_zip_from_url(zip_url: str) -> ZipFile:
     zip_name = requests.get(zip_url).content
     zip_file = ZipFile(BytesIO(zip_name))
     return zip_file
+
+
+def fieldfile_to_dictreader(
+    data_file: FieldFile, file_format: str, file_params: dict = {}, year: int = 0
+) -> DictReader:
+    """
+    Returns the data from the provided file as a DictReader.
+    """
+    if file_format == "csv":
+        csv_data = data_file.read()
+        if "newline" in file_params:
+            newline = file_params["newline"]
+        else:
+            newline = "\n"
+
+        if "encoding" in file_params:
+            encoding = file_params["encoding"]
+        else:
+            encoding = "utf-8"
+
+        str_file = StringIO(csv_data.decode(encoding), newline=newline)
+        return DictReader(str_file)
+    elif file_format == "excel":
+        if "sheet_name" in file_params:
+            sheet = file_params["sheet_name"]
+        else:
+            sheet = ""
+
+        sheet = sheet.format(year=year)
+        return excel_fieldfile_to_dictreader(data_file, sheet)
+    else:
+        raise ValueError("File format is not valid")
+
+
+def excel_fieldfile_to_dictreader(
+    data_file: FieldFile, sheet: Union[str, int] = 0
+) -> DictReader:
+    """
+    Takes an excel file and return a DictReader object
+    """
+    dataframe = pandas.read_excel(data_file.read(), sheet, dtype="object")
+    csv_string = dataframe.to_csv(index=False)
+    return DictReader(csv_string.splitlines())

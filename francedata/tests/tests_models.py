@@ -1,10 +1,13 @@
 from django.test import TestCase
 from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.test import override_settings
 
 from francedata.models import (
     Commune,
     CommuneData,
+    DataMapping,
+    DataSourceFile,
     DepartementData,
     Epci,
     DataSource,
@@ -15,6 +18,10 @@ from francedata.models import (
     Region,
     RegionData,
 )
+
+from francedata.tests.testdata.sample_data import sample_commune_mapping
+
+import json
 
 
 class MetadataTestCase(TestCase):
@@ -63,17 +70,6 @@ class DataSourceTestCase(TestCase):
                 title="Test title", url="http://test-url.com", year=year
             )
 
-    def test_datasource_is_not_imported_by_default(self) -> None:
-        test_item = DataSource.objects.get(year__year=2020)
-        self.assertFalse(test_item.is_imported)
-        self.assertIsNone(test_item.imported_at)
-
-    def test_datasource_can_be_marked_as_imported(self) -> None:
-        test_item = DataSource.objects.get(year__year=2020)
-        test_item.mark_imported()
-        self.assertTrue(test_item.is_imported)
-        self.assertIsNotNone(test_item.imported_at)
-
     def test_datasource_has_title_as_public_label_by_default(self) -> None:
         test_item = DataSource.objects.get(year__year=2020)
         self.assertEqual(test_item.get_public_label(), "Test title (2020)")
@@ -82,6 +78,116 @@ class DataSourceTestCase(TestCase):
         test_item = DataSource.objects.get(year__year=2020)
         test_item.public_label = "Manually set public label"
         self.assertEqual(test_item.get_public_label(), "Manually set public label")
+
+
+class DataMappingTestCase(TestCase):
+    def setUp(self) -> None:
+        test_item = DataMapping.objects.create(
+            name="Test mapping",
+            file_format="xlsx",
+            mapping=json.loads(sample_commune_mapping),
+        )
+
+    def test_mapping_is_created(self) -> None:
+        test_item = DataMapping.objects.get(name="Test mapping")
+        self.assertEqual(str(test_item), "Test mapping")
+        self.assertEqual(test_item.mapping["insee_key"], "CodeInsee")
+
+
+@override_settings(MEDIA_ROOT="francedata/tests/testdata")
+class DataSourceFileTestCase(TestCase):
+    def setUp(self) -> None:
+        mapping_excel = DataMapping.objects.create(
+            name="Test mapping",
+            file_format="excel",
+            mapping=json.loads(sample_commune_mapping),
+        )
+        mapping_csv = DataMapping.objects.create(
+            name="Test mapping",
+            file_format="csv",
+            mapping=json.loads(sample_commune_mapping),
+        )
+
+        year = DataYear.objects.create(year=2021)
+        source_xlsx = DataSource.objects.create(title="Sample source - xlsx", year=year)
+        source_csv = DataSource.objects.create(title="Sample source - csv", year=year)
+        # Creating departements with 2-digit number, 3-digit number, numbers + letters, number with leading 0
+        dept_01 = Departement.objects.create(insee="01", name="Ain")
+        dept_2a = Departement.objects.create(insee="2A", name="Corse-du-Sud")
+        dept_56 = Departement.objects.create(insee="56", name="Morbihan")
+        dept_976 = Departement.objects.create(insee="976", name="Mayotte")
+
+        dept_01.years.add(year)
+        dept_2a.years.add(year)
+        dept_56.years.add(year)
+        dept_976.years.add(year)
+
+        test_item_xlsx = DataSourceFile.objects.create(
+            name="Test xlsx source file",
+            data_file="sample_communes.xlsx",
+            data_mapping=mapping_excel,
+            source=source_xlsx,
+        )
+
+        test_item_csv = DataSourceFile.objects.create(
+            name="Test csv source file",
+            data_file="sample_communes.csv",
+            data_mapping=mapping_csv,
+            source=source_csv,
+        )
+
+    def test_source_file_is_created(self) -> None:
+        test_item = DataSourceFile.objects.get(name="Test xlsx source file")
+        self.assertEqual(str(test_item), "Test xlsx source file")
+
+    def test_excel_source_file_can_be_imported(self) -> None:
+        test_item = DataSourceFile.objects.get(name="Test xlsx source file")
+        test_item.import_file_data()
+        self.assertEqual(Commune.objects.all().count(), 12)
+        self.assertEqual(CommuneData.objects.all().count(), 336)
+        self.assertEqual(
+            Commune.objects.get(insee="01001").name, "L'Abergement-Clémenciat"
+        )
+        self.assertEqual(
+            CommuneData.objects.get(commune__insee="01001", datacode="pop_muni").value,
+            "771",
+        )
+        self.assertEqual(
+            CommuneData.objects.get(
+                commune__insee="01001", datacode="pop_muni"
+            ).datatype,
+            "int",
+        )
+
+    def test_csv_source_file_can_be_imported(self) -> None:
+        test_item = DataSourceFile.objects.get(name="Test csv source file")
+        test_item.import_file_data()
+        self.assertEqual(Commune.objects.all().count(), 12)
+        self.assertEqual(CommuneData.objects.all().count(), 336)
+        self.assertEqual(
+            Commune.objects.get(insee="01001").name, "L'Abergement-Clémenciat"
+        )
+        self.assertEqual(
+            CommuneData.objects.get(commune__insee="01001", datacode="pop_muni").value,
+            "771",
+        )
+        self.assertEqual(
+            CommuneData.objects.get(
+                commune__insee="01001", datacode="pop_muni"
+            ).datatype,
+            "int",
+        )
+
+    def test_source_file_is_not_marked_as_imported_by_default(self) -> None:
+        test_item = DataSourceFile.objects.get(name="Test xlsx source file")
+        self.assertFalse(test_item.is_imported)
+        self.assertIsNone(test_item.imported_at)
+
+    def test_source_file_can_be_marked_as_imported(self) -> None:
+        test_item = DataSourceFile.objects.get(name="Test xlsx source file")
+        test_item.mark_imported()
+        self.assertTrue(test_item.is_imported)
+        self.assertIsNotNone(test_item.imported_at)
 
 
 class RegionTestCase(TestCase):
@@ -324,6 +430,13 @@ class CommuneTestCase(TestCase):
             test_item = Commune.objects.get(insee="01001")
             test_item.siren = "42"
             test_item.save()
+
+    def test_commune_slug_has_proper_characters(self) -> None:
+        dept = Departement.objects.get(insee="01")
+        test_item = Commune.objects.create(
+            name="Le Bœuf étoilé", insee="01010", departement=dept
+        )
+        self.assertEqual(test_item.slug, "le-boeuf-etoile-01010")
 
 
 class RegionDataTestCase(TestCase):

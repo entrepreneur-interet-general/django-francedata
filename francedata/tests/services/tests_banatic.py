@@ -120,7 +120,16 @@ class ImportCommuneRowFromBanaticTestCase(TestCase):
             "N° SIREN": "200023307",
             "Siren membre": "214702375",
         }
-        import_epci_row_from_banatic(row=test_row, year_entry=year_entry)
+        column_keys = {
+            "epci_name": "Nom du groupement",
+            "epci_type": "Nature juridique",
+            "epci_siren": "N° SIREN",
+            "member_siren": "Siren membre",
+        }
+
+        import_epci_row_from_banatic(
+            row=test_row, year_entry=year_entry, column_keys=column_keys
+        )
 
     def test_epci_is_created(self) -> None:
         year_entry = DataYear.objects.get(year=2021)

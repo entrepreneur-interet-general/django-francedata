@@ -1,4 +1,8 @@
+from django.db.models import JSONField
 from django.contrib import admin
+from django.http.response import HttpResponseRedirect
+from django_json_widget.widgets import JSONEditorWidget
+from simple_history.admin import SimpleHistoryAdmin
 
 from francedata import models
 from francedata.services.django_admin import (
@@ -213,11 +217,30 @@ class DataSourceAdmin(TimeStampModelAdmin):
                 ]
             },
         ),
-        ("Import", {"fields": ["is_imported", "imported_at"]}),
         ("Métadonnées", {"fields": ["id", "created_at", "updated_at"]}),
     ]
+    list_filter = ("title", "year")
+
+
+@admin.register(models.DataSourceFile)
+class DataSourceFileAdmin(TimeStampModelAdmin):
+    change_form_template = "desl_imports/admin/query_changeform.html"
+
+    # Import the file data from the admin detail view
+    def response_change(self, request, obj):
+        if "_import_file_data" in request.POST:
+            obj.import_file_data_command(request)
+            return HttpResponseRedirect(".")  # stay on the same detail page
+        return super().response_change(request, obj)
+
     list_display = ("__str__", "is_imported")
-    list_filter = ("title", "year", "is_imported")
+
+
+@admin.register(models.DataMapping)
+class DataMappingAdmin(SimpleHistoryAdmin):
+    formfield_overrides = {
+        JSONField: {"widget": JSONEditorWidget},
+    }
 
 
 admin.site.register(models.Metadata)
