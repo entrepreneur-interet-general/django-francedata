@@ -1,6 +1,9 @@
 from io import StringIO
-from django.test import TestCase
-from unittest import mock
+from unittest import TestCase
+
+from francedata.services.utils import excel_fieldfile_to_dictreader
+from csv import DictReader
+
 
 from francedata.services.utils import (
     file_exists_at_url,
@@ -95,3 +98,24 @@ COMD,01015,,,,1,ARBIGNIEU,Arbignieu,Arbignieu,,01015"""
             test_result[0],
             {"insee": "01001", "name": "L'Abergement-Clémenciat", "dept": "01"},
         )
+
+
+class ExcelFieldfileToDictReaderTestCase(TestCase):
+    def setUp(self) -> None:
+        self.filename = "francedata/tests/testdata/sample_epci.xlsx"
+        self.first_row = {
+            "dep_epci": "22",
+            "siren_epci": "200065928",
+            "nom_complet": "CA Lannion-Trégor Communauté",
+            "nj_epci2021": "CA",
+            "fisc_epci2021": "FPU",
+            "nb_com_2021": "57",
+            "ptot_epci_2021": "103329",
+            "pmun_epci_2021": "99520",
+        }
+
+    def test_file_is_converted_to_a_dictreader_of_rows(self) -> None:
+        with open(self.filename, "rb") as testfile:
+            reader = excel_fieldfile_to_dictreader(testfile, "Epcisanscom2021")
+        self.assertEqual(type(reader), DictReader)
+        self.assertEqual(next(reader), self.first_row)

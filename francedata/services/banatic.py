@@ -9,8 +9,6 @@ from typing import Pattern
 
 from francedata.models import Epci, Commune, DataYear, Metadata
 
-from pprint import pprint
-
 # from francedata.services.datagouv import get_datagouv_file
 
 BANATIC_ID = "5e1f20058b4c414d3f94460d"
@@ -97,26 +95,40 @@ def import_epci_data_from_banatic(year: int) -> None:
         print(f"Importing {rows_count} entries.")
 
         for row in list_reader:
-            print(import_epci_row_from_banatic(row, year_entry))
+            column_keys = {
+                "epci_name": "Nom du groupement",
+                "epci_type": "Nature juridique",
+                "epci_siren": "N° SIREN",
+                "member_siren": "Siren membre",
+            }
+            print(import_epci_row_from_banatic(row, year_entry, column_keys))
 
         Metadata.objects.get_or_create(prop="banatic_epci_year", value=year)
     else:
         raise ValueError("The spreadsheet is empty")
 
 
-def import_epci_row_from_banatic(row, year_entry) -> str:
-    epci_name = row["Nom du groupement"]
-    epci_type = row["Nature juridique"]
-    epci_siren = row["N° SIREN"]
+def import_epci_row_from_banatic(row, year_entry, column_keys) -> str:
+    epci_name_key = column_keys["epci_name"]
+    epci_name = row[epci_name_key]
 
-    member_siren = row["Siren membre"]
+    epci_type_key = column_keys["epci_type"]
+    epci_type = row[epci_type_key]
+
+    epci_siren_key = column_keys["epci_siren"]
+    epci_siren = row[epci_siren_key]
+
+    member_siren_key = column_keys["member_siren"]
+    member_siren = row[member_siren_key]
     member_commune = Commune.objects.get(siren=member_siren, years=year_entry)
 
     # Get or create the EPCI
     epci_entry, return_code = Epci.objects.get_or_create(
-        name=epci_name,
-        epci_type=epci_type,
         siren=epci_siren,
+        defaults={
+            "name": epci_name,
+            "epci_type": epci_type,
+        },
     )
     epci_entry.save()
 
