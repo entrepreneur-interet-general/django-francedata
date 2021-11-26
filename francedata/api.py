@@ -4,6 +4,7 @@ from typing import List
 from django.shortcuts import get_object_or_404
 
 from django.db.models import Max
+from django.db.models import Q
 
 from francedata.models import (
     Metadata,
@@ -107,23 +108,33 @@ def search_subdivisions(request, query: str, category: str = None, year: int = N
     else:
         if category == "regions" or return_all_categories:
             regions_raw = Region.objects.filter(
-                name__unaccent__istartswith=query, years__exact=regions_year_entry
+                Q(name__unaccent__istartswith=query)
+                | Q(siren__startswith=query)
+                | Q(insee__startswith=query),
+                years__exact=regions_year_entry,
             ).exclude(
                 siren__exact=""
             )  # Exclude Mayotte that has no region-level Siren
         if category == "departements" or return_all_categories:
             departements_raw = Departement.objects.filter(
-                name__unaccent__istartswith=query, years__exact=departements_year_entry
+                Q(name__unaccent__istartswith=query)
+                | Q(siren__startswith=query)
+                | Q(insee__startswith=query),
+                years__exact=departements_year_entry,
             ).exclude(
                 siren__exact=""
             )  # Exclude Haute-Corse, Corse-du-Sud, Martinique and Guyane that have no departement-level Siren
         if category == "epcis" or return_all_categories:
             epcis_raw = Epci.objects.filter(
-                name__unaccent__icontains=query, years__exact=epcis_year_entry
+                Q(name__unaccent__icontains=query) | Q(siren__startswith=query),
+                years__exact=epcis_year_entry,
             )
         if category == "communes" or return_all_categories:
             communes_raw = Commune.objects.filter(
-                name__unaccent__istartswith=query, years__exact=communes_year_entry
+                Q(name__unaccent__istartswith=query)
+                | Q(siren__startswith=query)
+                | Q(insee__startswith=query),
+                years__exact=communes_year_entry,
             )
 
     if len(regions_raw):
