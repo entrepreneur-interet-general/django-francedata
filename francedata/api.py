@@ -84,27 +84,32 @@ def search_subdivisions(request, query: str, category: str = None, year: int = N
         epcis_year_entry = regions_year_entry
         communes_year_entry = regions_year_entry
 
-    if len(query) < 3 and (category == "communes" or return_all_categories):
-        shortnamed_communes = [
-            "by",
-            "bu",
-            "eu",
-            "gy",
-            "oz",
-            "oo",
-            "py",
-            "ri",
-            "ry",
-            "sy",
-            "ur",
-            "us",
-            "uz",
-            "y",
-        ]
-        if query in shortnamed_communes:
-            communes_raw = Commune.objects.filter(
-                name__unaccent__iexact=query, years__exact=communes_year_entry
-            )
+    if len(query) < 3:
+        if category == "communes" or return_all_categories:
+            shortnamed_communes = [
+                "by",
+                "bu",
+                "eu",
+                "gy",
+                "oz",
+                "oo",
+                "py",
+                "ri",
+                "ry",
+                "sy",
+                "ur",
+                "us",
+                "uz",
+                "y",
+            ]
+            if query in shortnamed_communes:
+                communes_raw = Commune.objects.filter(
+                    name__unaccent__iexact=query, years__exact=communes_year_entry
+                )
+        if query.isnumeric() and (category == "departements" or return_all_categories):
+            departements_raw = Departement.objects.filter(insee=query)
+        if query.isnumeric() and (category == "regions" or return_all_categories):
+            regions_raw = Region.objects.filter(insee=query)
     else:
         if category == "regions" or return_all_categories:
             regions_raw = Region.objects.filter(
