@@ -3,7 +3,7 @@ authors = ["Sylvain Boissel <sylvain.boissel@dgcl.gouv.fr>"]
 description = "A Django app to provide a database structure, API and import scripts to manage French communes, intercommunalités, départements and régions, with their structure and data from Insee and the DGCL."
 license = "AGPL-3"
 name = "django-francedata"
-version = "0.14.2"
+version = "0.14.3"
 
 classifiers = [
   "Development Status :: 3 - Alpha",

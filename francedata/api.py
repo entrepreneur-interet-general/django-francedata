@@ -1,4 +1,4 @@
-from ninja import Router, Schema
+from ninja import Router
 from unidecode import unidecode
 from typing import List
 from django.shortcuts import get_object_or_404
@@ -14,9 +14,18 @@ from francedata.models import (
     Commune,
     DataYear,
 )
+from francedata.models.collectivity import (
+    CommuneData,
+    DepartementData,
+    EpciData,
+    RegionData,
+)
 
 from francedata.schemas import (
-    DataYearSchema,
+    CommuneDataSchema,
+    DepartementDataSchema,
+    EpciDataSchema,
+    RegionDataSchema,
     RegionSchema,
     DepartementSchema,
     EpciSchema,
@@ -289,3 +298,141 @@ def get_commune_by_siren(request, siren_id):
 def get_commune_by_insee(request, insee_id):
     item = get_object_or_404(Commune, insee=insee_id)
     return item
+
+
+# Region data
+@router.get("/regiondata/{siren_id}", response=List[RegionDataSchema], tags=["data"])
+def get_region_data(request, siren_id):
+    """
+    Return all data for the given region
+    """
+    queryset = RegionData.objects.filter(region__siren=siren_id)
+    return queryset
+
+
+@router.get(
+    "/regiondata/{siren_id}/latest", response=List[RegionDataSchema], tags=["data"]
+)
+def get_latest_region_data(request, siren_id):
+    """
+    Return the latest data for the given region
+    """
+    max_year = RegionData.objects.latest("year__year").year
+    queryset = RegionData.objects.filter(region__siren=siren_id, year=max_year)
+    return queryset
+
+
+@router.get(
+    "/regiondata/{siren_id}/{year}", response=List[RegionDataSchema], tags=["data"]
+)
+def get_region_data_by_year(request, siren_id, year):
+    """
+    Return data for the given region and the given year
+    """
+    queryset = RegionData.objects.filter(region__siren=siren_id, year__year=year)
+    return queryset
+
+
+# Departement data
+@router.get(
+    "/departementdata/{siren_id}", response=List[DepartementDataSchema], tags=["data"]
+)
+def get_departement_data(request, siren_id):
+    """
+    Return all data for the given département
+    """
+    queryset = DepartementData.objects.filter(departement__siren=siren_id)
+    return queryset
+
+
+@router.get(
+    "/departementdata/{siren_id}/latest",
+    response=List[DepartementDataSchema],
+    tags=["data"],
+)
+def get_latest_departement_data(request, siren_id):
+    """
+    Return the latest data for the given département
+    """
+    max_year = DepartementData.objects.latest("year__year").year
+    queryset = DepartementData.objects.filter(
+        departement__siren=siren_id, year=max_year
+    )
+    return queryset
+
+
+@router.get(
+    "/departementdata/{siren_id}/{year}",
+    response=List[DepartementDataSchema],
+    tags=["data"],
+)
+def get_departement_data_by_year(request, siren_id, year):
+    """
+    Return data for the given département and the given year
+    """
+    queryset = DepartementData.objects.filter(
+        departement__siren=siren_id, year__year=year
+    )
+    return queryset
+
+
+# EPCI data
+@router.get("/epcidata/{siren_id}", response=List[EpciDataSchema], tags=["data"])
+def get_epci_data(request, siren_id):
+    """
+    Return all data for the given EPCI
+    """
+    queryset = EpciData.objects.filter(epci__siren=siren_id)
+    return queryset
+
+
+@router.get("/epcidata/{siren_id}/latest", response=List[EpciDataSchema], tags=["data"])
+def get_latest_epci_data(request, siren_id):
+    """
+    Return latest data for the given EPCI
+    """
+    max_year = EpciData.objects.latest("year__year").year
+    queryset = EpciData.objects.filter(epci__siren=siren_id, year=max_year)
+    return queryset
+
+
+@router.get("/epcidata/{siren_id}/{year}", response=List[EpciDataSchema], tags=["data"])
+def get_epci_data_by_year(request, siren_id, year):
+    """
+    Return data for the given EPCI and the given year
+    """
+    queryset = EpciData.objects.filter(epci__siren=siren_id, year__year=year)
+    return queryset
+
+
+# Commune
+@router.get("/communedata/{siren_id}", response=List[CommuneDataSchema], tags=["data"])
+def get_commune_data(request, siren_id):
+    """
+    Return all data for the given commune
+    """
+    queryset = CommuneData.objects.filter(commune__siren=siren_id)
+    return queryset
+
+
+@router.get(
+    "/communedata/{siren_id}/latest", response=List[CommuneDataSchema], tags=["data"]
+)
+def get_latest_commune_data(request, siren_id):
+    """
+    Return the latest data for the given commune
+    """
+    max_year = CommuneData.objects.latest("year__year").year
+    queryset = CommuneData.objects.filter(commune__siren=siren_id, year=max_year)
+    return queryset
+
+
+@router.get(
+    "/communedata/{siren_id}/{year}", response=List[CommuneDataSchema], tags=["data"]
+)
+def get_commune_data_by_year(request, siren_id, year):
+    """
+    Return data for the given commune and the given year
+    """
+    queryset = CommuneData.objects.filter(commune__siren=siren_id, year__year=year)
+    return queryset
