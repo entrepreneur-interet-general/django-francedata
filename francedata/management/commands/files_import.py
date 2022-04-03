@@ -9,6 +9,16 @@ from francedata.models import DataSourceFile
 class Command(BaseCommand):
     help = "Import data from the DataSourceFile files"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--files", type=int, help="""
+            If specified, the files with the specified ID will be imported,
+            even if they are already marked as imported.
+            Multiple file IDs must be separated by a comma
+            """
+        )
+
+
     def handle(self, *args, **options):
         # Manage output
         FORMAT = "%(asctime)s %(message)s"
@@ -18,7 +28,12 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.INFO, format=FORMAT)
 
-        files = DataSourceFile.objects.filter(is_imported=False).order_by("created_at")
+        force_files = int(options["files"])
+        if force_files:
+            files_to_import = force_files.split(',')
+            files = DataSourceFile.objects.filter(id=files_to_import)
+        else:
+            files = DataSourceFile.objects.filter(is_imported=False).order_by("created_at")
 
         if not files:
             logging.info("Pas de fichier à importer.")
