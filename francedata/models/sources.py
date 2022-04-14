@@ -160,8 +160,12 @@ class DataSourceFile(TimeStampModel):
         try:
             insee = self.get_mapping_value("insee_key", "insee")
             fields = self.get_mapping_value("data_fields", [])
+            force_year = self.get_mapping_value("force_year", False)
 
-            dept = Departement.objects.get(insee=row[insee], years=self.source.year)
+            if force_year:
+                dept = Departement.objects.get(insee=row[insee], years=self.source.year)
+            else:
+                dept = Departement.objects.get(insee=row[insee])
             for field in fields:
                 values_dict = self.process_field(field, row)
                 fieldname_db = field["fieldname_database"]
