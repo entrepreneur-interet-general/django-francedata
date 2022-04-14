@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--files", type=int, help="""
+            "--files", type=str, help="""
             If specified, the files with the specified ID will be imported,
             even if they are already marked as imported.
             Multiple file IDs must be separated by a comma
@@ -28,10 +28,10 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.INFO, format=FORMAT)
 
-        force_files = int(options["files"])
+        force_files = options["files"]
         if force_files:
-            files_to_import = force_files.split(',')
-            files = DataSourceFile.objects.filter(id=files_to_import)
+            files_to_import = [int(x) for x in force_files.split(',')]
+            files = DataSourceFile.objects.filter(id__in=files_to_import)
         else:
             files = DataSourceFile.objects.filter(is_imported=False).order_by("created_at")
 
