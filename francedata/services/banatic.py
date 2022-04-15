@@ -9,7 +9,7 @@ from typing import Pattern
 
 from francedata.models import Epci, Commune, DataYear, Metadata
 
-# from francedata.services.datagouv import get_datagouv_file
+from francedata.services.datagouv import get_datagouv_file
 
 BANATIC_ID = "5e1f20058b4c414d3f94460d"
 
@@ -29,7 +29,7 @@ def import_commune_data_from_banatic(year: int = 0) -> None:
 
         if not year:
             year = max(annual_files)
-        year_entry, _year_return_code = DataYear.objects.get_or_create(year=year)
+        year_entry, _year_created = DataYear.objects.get_or_create(year=year)
         print(f"Importing data for year {year_entry}")
 
         with zip_file.open(annual_files[year]) as xlsx_file:
@@ -62,8 +62,6 @@ def import_epci_data_from_banatic(year: int) -> None:
     # Imports the EPCIs and EPCI <=> communes relations
     # Communes must have been imported beforehand from COG
 
-    # The link to the file has not been updated on data.gouv.fr for some time, so providing direct link
-    """
     epci_regex = re.compile(
         r"Périmètre des EPCI à fiscalité propre - année (?P<year>\d{4})"
     )
@@ -73,12 +71,8 @@ def import_epci_data_from_banatic(year: int) -> None:
         year = max(epci_files)
 
     epci_filename = epci_files[year]["url"]
-    """
 
-    epci_filename = "https://www.banatic.interieur.gouv.fr/V5/fichiers-en-telechargement/telecharger.php?zone=N&date=01/04/2021&format=E"
-    year = 2021
-
-    year_entry, _year_return_code = DataYear.objects.get_or_create(year=year)
+    year_entry, _year_created = DataYear.objects.get_or_create(year=year)
 
     print(f"🧮   Parsing spreadsheet {epci_filename}")
 
@@ -93,15 +87,20 @@ def import_epci_data_from_banatic(year: int) -> None:
 
     if rows_count:
         print(f"Importing {rows_count} entries.")
+        epci_sirens = []
 
+        column_keys = {
+            "epci_name": "Nom du groupement",
+            "epci_type": "Nature juridique",
+            "epci_siren": "N° SIREN",
+            "member_siren": "Siren membre",
+        }
+        
         for row in list_reader:
-            column_keys = {
-                "epci_name": "Nom du groupement",
-                "epci_type": "Nature juridique",
-                "epci_siren": "N° SIREN",
-                "member_siren": "Siren membre",
-            }
-            print(import_epci_row_from_banatic(row, year_entry, column_keys))
+            siren = row["N° SIREN"]
+            if siren not in epci_sirens:
+                print(import_epci_row_from_banatic(row, year_entry, column_keys))
+                epci_sirens.append(siren)
 
         Metadata.objects.get_or_create(prop="banatic_epci_year", value=year)
     else:
