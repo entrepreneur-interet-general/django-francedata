@@ -24,6 +24,16 @@ def parse_csv_from_distant_zip(
             return parse_csv_from_stream(stream, column_names, typecheck)
 
 
+def parse_csv_from_url(
+    file_url: str,
+    column_names: dict,
+    typecheck: dict = False,
+    ):
+    response = requests.get(file_url)
+    response.encoding = response.apparent_encoding
+    stream = StringIO(response.text)
+    return parse_csv_from_stream(stream, column_names, typecheck)
+
 def parse_csv_from_stream(
     stream,
     column_names: dict,

@@ -4,6 +4,7 @@ from francedata.services.datagouv import get_datagouv_file
 from francedata.services.utils import (
     get_zip_from_url,
     parse_csv_from_distant_zip,
+    parse_csv_from_url,
 )
 from francedata.models import (
     Commune,
@@ -28,11 +29,11 @@ def import_regions_from_cog(year: int = 0) -> dict:
 
     if not year:
         year = max(region_files)
-    year_entry, _year_return_code = DataYear.objects.get_or_create(year=year)
+    year_entry, _year_created = DataYear.objects.get_or_create(year=year)
 
     import_region_file = region_files[year]
 
-    source_entry, _source_return_code = DataSource.objects.get_or_create(
+    source_entry, _source_created = DataSource.objects.get_or_create(
         title=f"COG {import_region_file['title']}",
         url=import_region_file["url"],
         year=year_entry,
@@ -55,13 +56,20 @@ def import_regions_from_cog(year: int = 0) -> dict:
             "nccenr": "nccenr",
         }
 
-    print(f"🗜️   Parsing archive {import_region_file['url']}")
-    regions = parse_csv_from_distant_zip(
-        import_region_file["url"],
-        get_zip_from_url,
-        f"region{year}.csv",
-        column_names,
-    )
+    file_url = import_region_file["url"]
+    print(f"🗜️   Parsing archive {file_url}")
+    if file_url[-4:] == ".zip":
+        regions = parse_csv_from_distant_zip(
+            file_url,
+            get_zip_from_url,
+            f"region{year}.csv",
+            column_names,
+        )
+    else:
+        regions = parse_csv_from_url(
+            file_url,
+            column_names,
+        )
 
     for region in regions:
         print(import_region_from_cog(region, year_entry, source_entry))
@@ -95,7 +103,7 @@ def import_region_from_cog(
     # Import metadata
     metadata_keys = ["seat_insee", "tncc", "nccenr"]
     for md_key in metadata_keys:
-        metadata_entry, _md_entry_return_code = RegionData.objects.get_or_create(
+        metadata_entry, _md_entry_created = RegionData.objects.get_or_create(
             region=entry,
             year=year_entry,
             datacode=md_key,
@@ -114,11 +122,11 @@ def import_departements_from_cog(year):
 
     if not year:
         year = max(depts_files)
-    year_entry, _year_return_code = DataYear.objects.get_or_create(year=year)
+    year_entry, _year_created = DataYear.objects.get_or_create(year=year)
 
     import_dept_file = depts_files[year]
 
-    source_entry, _source_return_code = DataSource.objects.get_or_create(
+    source_entry, _source_created = DataSource.objects.get_or_create(
         title=f"COG {import_dept_file['title']}",
         url=import_dept_file["url"],
         year=year_entry,
@@ -143,13 +151,21 @@ def import_departements_from_cog(year):
             "nccenr": "nccenr",
         }
 
-    print(f"🗜️   Parsing archive {import_dept_file['url']}")
-    depts = parse_csv_from_distant_zip(
-        import_dept_file["url"],
-        get_zip_from_url,
-        f"departement{year}.csv",
-        column_names,
-    )
+    file_url = import_dept_file['url']
+    print(f"🗜️   Parsing archive {file_url}")
+    if file_url[-4:] == ".zip":
+        depts = parse_csv_from_distant_zip(
+            import_dept_file["url"],
+            get_zip_from_url,
+            f"departement{year}.csv",
+            column_names,
+        )
+    else:
+        depts = parse_csv_from_url(
+            file_url,
+            column_names,
+        )
+
 
     for dept in depts:
         print(import_departement_from_cog(dept, year_entry, source_entry))
@@ -185,7 +201,7 @@ def import_departement_from_cog(
     # Import metadata
     metadata_keys = ["seat_insee", "tncc", "nccenr"]
     for md_key in metadata_keys:
-        metadata_entry, _md_entry_return_code = DepartementData.objects.get_or_create(
+        metadata_entry, _md_entry_created = DepartementData.objects.get_or_create(
             departement=entry,
             year=year_entry,
             datacode=md_key,
@@ -205,7 +221,7 @@ def import_communes_from_cog(year):
 
     if not year:
         year = max(communes_files)
-    year_entry, year_return_code = DataYear.objects.get_or_create(year=year)
+    year_entry, year_created = DataYear.objects.get_or_create(year=year)
 
     import_communes_file = communes_files[year]
 
@@ -216,7 +232,7 @@ def import_communes_from_cog(year):
     else:
         csv_filename = f"communes{year}.csv"
 
-    source_entry, _source_return_code = DataSource.objects.get_or_create(
+    source_entry, _source_created = DataSource.objects.get_or_create(
         title=f"COG {import_communes_file['title']}",
         url=import_communes_file["url"],
         year=year_entry,
@@ -241,19 +257,27 @@ def import_communes_from_cog(year):
         }
         typecheck = {"column": "typecom", "value": "COM"}
 
+    file_url = import_communes_file['url']
     print(f"🗜️   Parsing archive {import_communes_file['url']}")
-    communes = parse_csv_from_distant_zip(
-        import_communes_file["url"],
-        get_zip_from_url,
-        csv_filename,
-        column_names,
-        typecheck=typecheck,
-    )
+    if file_url[-4:] == ".zip":
+        communes = parse_csv_from_distant_zip(
+            import_communes_file["url"],
+            get_zip_from_url,
+            csv_filename,
+            column_names,
+            typecheck=typecheck,
+        )
+    else:
+        communes = parse_csv_from_url(
+            file_url,
+            column_names,
+            typecheck=typecheck,
+        )
 
     for commune in communes:
         print(import_commune_from_cog(commune, year_entry, source_entry))
 
-    md_entry, md_return_code = Metadata.objects.get_or_create(
+    md_entry, md_created = Metadata.objects.get_or_create(
         prop="cog_communes_year", value=year
     )
 
