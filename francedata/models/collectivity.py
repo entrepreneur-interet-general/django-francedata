@@ -7,6 +7,7 @@ from unidecode import unidecode
 from django.db import models
 from django.db.models import Max
 from django.db.models.query import QuerySet
+from django.utils import timezone
 from django.utils.text import slugify
 
 from francedata.services.django_admin import TimeStampModel
@@ -42,6 +43,15 @@ class CollectivityModel(TimeStampModel):
             data = data.filter(datacode=datacode)
 
         return data
+
+    def add_current_datayear(self):
+        """
+        Adds the current datayear to a collectivity object
+        """
+        year = str(timezone.now().year)
+        year_entry, _ = DataYear.objects.get_or_create(year=year)
+        self.years.add(year_entry)
+        self.save()
 
     def create_slug(self):
         self.slug = slugify(unidecode(self.name))

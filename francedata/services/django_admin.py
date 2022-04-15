@@ -37,6 +37,26 @@ class TimeStampModelAdmin(admin.ModelAdmin):
     class Meta:
         abstract = True
 
+def add_current_datayear(modeladmin, request, queryset):
+    """
+    Marks the collectivity as belonging to the current year
+    """
+    for entry in queryset:
+        entry.add_current_datayear()
+        entry.save()
+
+add_current_datayear.short_description = 'Ajouter le millésime actuel'
+
+
+class CollectivityModelAdmin(TimeStampModelAdmin):
+    """
+    Specific TimeStampModelAdmin for collectivity models
+    """
+    actions = [add_current_datayear, ]
+
+    class Meta:
+        abstract = True
+
 
 def view_reverse_changelink(
     obj: Model,

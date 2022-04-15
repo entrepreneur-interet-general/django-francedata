@@ -6,6 +6,7 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from francedata import models
 from francedata.services.django_admin import (
+    CollectivityModelAdmin,
     TimeStampModelAdmin,
     related_object_link,
     view_reverse_changelink,
@@ -34,7 +35,7 @@ class CommuneDataInline(admin.TabularInline):
 
 # Templates
 @admin.register(models.Region)
-class RegionAdmin(TimeStampModelAdmin):
+class RegionAdmin(CollectivityModelAdmin):
     search_fields = ("name__startswith", "slug", "insee", "siren")
     list_display = ("name", "slug", "insee", "siren", "view_departements_link")
     ordering = ["name"]
@@ -73,7 +74,7 @@ class RegionAdmin(TimeStampModelAdmin):
 
 
 @admin.register(models.Departement)
-class DepartementAdmin(TimeStampModelAdmin):
+class DepartementAdmin(CollectivityModelAdmin):
     search_fields = ("name__startswith", "slug", "insee", "siren")
     list_display = ("name", "slug", "insee", "siren", "view_communes_link")
     list_filter = ("years", "region")
