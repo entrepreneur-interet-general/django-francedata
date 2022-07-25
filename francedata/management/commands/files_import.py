@@ -39,6 +39,7 @@ class Command(BaseCommand):
             logging.info("Pas de fichier à importer.")
 
         for file in files:
+            logging.info(f"Import du fichier {file}.")
             response = file.import_file_data()
             result = response["success"]
             if result:

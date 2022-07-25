@@ -3,7 +3,6 @@
 
 from django.core.management.base import BaseCommand
 from francedata.models import Departement, Region
-from os import path
 
 from francedata.services.cog import (
     import_communes_from_cog,
