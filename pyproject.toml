@@ -46,7 +46,7 @@ xlrd = "^2.0.1"
 
 [tool.poetry.dev-dependencies]
 black = "^21.8b0"
-ipython = "^8.2.0"
+ipython = "^8.10.0"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
