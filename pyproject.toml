@@ -31,7 +31,7 @@ repository = "https://github.com/entrepreneur-interet-general/django-francedata"
 include = ["LICENSE", "README.rst", "francedata/resources/*"]
 
 [tool.poetry.dependencies]
-Django = "^3.2.7"
+Django = "^4.2.1"
 Unidecode = "^1.2.0"
 django-json-widget = "^1.1.1"
 django-ninja = "^0.14.0"
