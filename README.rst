@@ -16,6 +16,8 @@ Provides a database structure, API and import scripts to manage French communes,
 
 This app was created as a part of `Open Collectivités <https://github.com/entrepreneur-interet-general/opencollectivites>`_.
 
+This repository is now inactive and kept as an archive.
+
 Unaccent extension
 ##################
 
